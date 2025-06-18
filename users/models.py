@@ -3,7 +3,8 @@ from django.db import models
 
 
 class User(AbstractUser):
-    username = models.CharField()
+    username = None
+
     email = models.EmailField(
         unique=True, verbose_name="Почта", help_text="Укажите почту"
     )
