@@ -1,5 +1,10 @@
 from rest_framework import serializers
-from users.models import User, Payment
+from users.models import Payment, CustomUser
+from django.contrib.auth import get_user_model
+from django.contrib.auth.password_validation import validate_password
+
+
+User = get_user_model()
 
 
 class PaymentSerializer(serializers.ModelSerializer):
@@ -10,6 +15,9 @@ class PaymentSerializer(serializers.ModelSerializer):
 
 class UserSerializer(serializers.ModelSerializer):
     payments = PaymentSerializer(many=True, read_only=True)
+    password = serializers.CharField(
+        write_only=True, required=True, validators=[validate_password]
+    )
 
     class Meta:
         model = User
@@ -19,5 +27,29 @@ class UserSerializer(serializers.ModelSerializer):
             "phone",
             "city",
             "avatar",
-            "payments",  # 👈 сюда выводится история платежей
+            "payments",
         )
+
+
+class RegisterSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True)
+
+    class Meta:
+        model = CustomUser
+        fields = ["id", "email", "username", "password"]
+
+    def create(self, validated_data):
+        user = CustomUser.objects.create_user(**validated_data)
+        return user
+
+
+class PublicUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = ("id", "username", "email", "country", "phone")
+
+
+class PrivateUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        exclude = ("password",)
