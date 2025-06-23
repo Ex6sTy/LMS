@@ -17,6 +17,7 @@ from courses.serializers import (
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from .permissions import IsModerator, IsOwner
+from .paginators import CourseLessonPagination
 
 
 class CourseViewSet(viewsets.ModelViewSet):
@@ -47,6 +48,7 @@ class LessonCreateAPIView(CreateAPIView):
 class LessonListAPIView(ListAPIView):
     queryset = Lesson.objects.all()
     serializer_class = LessonSerializer
+    pagination_class = CourseLessonPagination
 
 
 class LessonRetrieveAPIView(RetrieveAPIView):
