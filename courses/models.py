@@ -28,6 +28,8 @@ class Course(models.Model):
         help_text="Пользователь, создавший курс",
     )
 
+    video_link = models.URLField(blank=True, null=True)
+
     class Meta:
         verbose_name = "Курс"
         verbose_name_plural = "Курсы"
