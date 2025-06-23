@@ -1,13 +1,13 @@
-from django.urls import path
+from django.urls import include, path
+from rest_framework.routers import DefaultRouter
+
 from users.views import (
     PaymentListAPIView,
-    UserProfileAPIView,
     RegisterView,
-    UserListView,
+    UserProfileAPIView,
     UserRetrieveUpdateView,
 )
-from django.urls import path, include
-from rest_framework.routers import DefaultRouter
+
 from .views import UserViewSet
 
 app_name = "users"

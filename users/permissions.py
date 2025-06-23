@@ -1,4 +1,4 @@
-from rest_framework.permissions import BasePermission, SAFE_METHODS
+from rest_framework.permissions import BasePermission
 
 
 class IsModerator(BasePermission):
@@ -14,3 +14,11 @@ class IsOwner(BasePermission):
 class IsSelf(BasePermission):
     def has_object_permission(self, request, view, obj):
         return obj == request.user
+
+
+class IsOwnerOrModer(BasePermission):
+    def has_object_permission(self, request, view, obj):
+        return (
+            obj.user == request.user
+            or request.user.groups.filter(name="Модератор").exists()
+        )

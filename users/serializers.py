@@ -1,8 +1,8 @@
-from rest_framework import serializers
-from users.models import Payment, CustomUser
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
+from rest_framework import serializers
 
+from users.models import CustomUser, Payment
 
 User = get_user_model()
 

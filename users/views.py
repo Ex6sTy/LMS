@@ -1,15 +1,15 @@
-from rest_framework import generics
-from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.generics import RetrieveAPIView
-from users.models import Payment, CustomUser
-from users.serializers import UserSerializer, PaymentSerializer, RegisterSerializer
-from users.filters import PaymentFilter
-from rest_framework.permissions import AllowAny
 from django_filters import rest_framework as filters
-from rest_framework import viewsets, permissions
-from .permissions import IsOwner
-from .serializers import PublicUserSerializer, PrivateUserSerializer
-from .permissions import IsSelf
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import generics, permissions, viewsets
+from rest_framework.generics import RetrieveAPIView
+from rest_framework.permissions import AllowAny, IsAuthenticated
+
+from users.filters import PaymentFilter
+from users.models import CustomUser, Payment
+from users.serializers import PaymentSerializer, RegisterSerializer, UserSerializer
+
+from .permissions import IsOwnerOrModer, IsSelf
+from .serializers import PrivateUserSerializer, PublicUserSerializer
 
 
 class PaymentListAPIView(generics.ListAPIView):
@@ -18,11 +18,13 @@ class PaymentListAPIView(generics.ListAPIView):
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     filterset_class = PaymentFilter
     ordering_fields = ["date"]
+    permission_classes = [IsAuthenticated, IsOwnerOrModer]
 
 
 class UserProfileAPIView(RetrieveAPIView):
     queryset = CustomUser.objects.all()
     serializer_class = UserSerializer
+    permission_classes = [IsAuthenticated]
 
     def get_object(self):
         return self.request.user
@@ -37,6 +39,7 @@ class RegisterView(generics.CreateAPIView):
 class UserListView(generics.ListAPIView):
     queryset = CustomUser.objects.all()
     serializer_class = UserSerializer
+    permission_classes = [IsAuthenticated]
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -49,7 +52,7 @@ class UserViewSet(viewsets.ModelViewSet):
         elif self.action in ["retrieve", "list"]:
             return [permissions.IsAuthenticated()]
         elif self.action in ["update", "partial_update", "destroy"]:
-            return [permissions.IsAuthenticated(), IsOwner()]
+            return [permissions.IsAuthenticated(), IsSelf()]
         return super().get_permissions()
 
 
@@ -62,6 +65,6 @@ class UserRetrieveUpdateView(generics.RetrieveUpdateAPIView):
         return PublicUserSerializer
 
     def get_permissions(self):
-        if self.request.method in permissions.SAFE_METHODS:
-            return [permissions.IsAuthenticated()]
-        return [permissions.IsAuthenticated(), IsSelf()]
+        if self.request.method in ("PUT", "PATCH"):
+            return [IsAuthenticated(), IsSelf()]
+        return [IsAuthenticated()]

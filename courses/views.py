@@ -1,19 +1,19 @@
-from rest_framework.viewsets import ModelViewSet
+from rest_framework import permissions, viewsets
 from rest_framework.generics import (
     CreateAPIView,
+    DestroyAPIView,
     ListAPIView,
     RetrieveAPIView,
     UpdateAPIView,
-    DestroyAPIView,
 )
 
 from courses.models import Course, Lesson
 from courses.serializers import (
+    CourseDetailSerializer,
     CourseSerializer,
     LessonSerializer,
-    CourseDetailSerializer,
 )
-from rest_framework import viewsets, permissions
+
 from .permissions import IsModerator, IsOwner
 
 
