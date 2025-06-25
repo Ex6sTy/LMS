@@ -18,6 +18,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from .permissions import IsModerator, IsOwner
 from .paginators import CourseLessonPagination
+import requests
 
 
 class CourseViewSet(viewsets.ModelViewSet):
