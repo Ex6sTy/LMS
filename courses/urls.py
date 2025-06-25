@@ -1,21 +1,21 @@
 from django.urls import path
 from rest_framework.routers import SimpleRouter
 
+from courses.apps import CoursesConfig
 from courses.views import (
     CourseViewSet,
     LessonCreateAPIView,
-    LessonListAPIView,
-    LessonUpdateAPIView,
     LessonDestroyAPIView,
+    LessonListAPIView,
     LessonRetrieveAPIView,
+    LessonUpdateAPIView,
+    SubscriptionToggleAPIView,
 )
-from courses.apps import CoursesConfig
-
 
 app_name = CoursesConfig.name
 
 router = SimpleRouter()
-router.register("", CourseViewSet)
+router.register("", CourseViewSet, basename="course")
 
 urlpatterns = [
     path("lessons/", LessonListAPIView.as_view(), name="lessons-list"),
@@ -29,6 +29,7 @@ urlpatterns = [
     path(
         "lessons/<int:pk>/update/", LessonUpdateAPIView.as_view(), name="lessons-update"
     ),
+    path("subscribe/", SubscriptionToggleAPIView.as_view(), name="subscribe-toggle"),
 ]
 
 urlpatterns += router.urls

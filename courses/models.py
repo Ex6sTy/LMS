@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import models
 
 
@@ -19,12 +20,34 @@ class Course(models.Model):
         help_text="Введите описание курса",
     )
 
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="courses",
+        verbose_name="Автор курса",
+        help_text="Пользователь, создавший курс",
+    )
+
+    video_link = models.URLField(blank=True, null=True)
+
     class Meta:
         verbose_name = "Курс"
         verbose_name_plural = "Курсы"
 
+    def __str__(self):
+        return self.name
+
 
 class Lesson(models.Model):
+    course = models.ForeignKey(
+        "Course",
+        on_delete=models.CASCADE,
+        related_name="lessons",
+        null=True,
+        blank=True,
+        help_text="Выберите курс, к которому относится урок",
+        verbose_name="Курс",
+    )
     name = models.CharField(
         max_length=100, verbose_name="Урок", help_text="Укажите урок"
     )
@@ -45,6 +68,40 @@ class Lesson(models.Model):
         blank=True, null=True, verbose_name="Видеоурок", help_text="Загрузите видеоурок"
     )
 
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="lessons",
+        verbose_name="Автор урока",
+        help_text="Пользователь, создавший урок",
+    )
+
     class Meta:
         verbose_name = "Урок"
         verbose_name_plural = "Уроки"
+
+    def __str__(self):
+        return f"{self.name} ({self.course.name if self.course else 'без курса'})"
+
+
+class Subscription(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='subscriptions',
+        verbose_name="Пользователь"
+    )
+    course = models.ForeignKey(
+        'Course',
+        on_delete=models.CASCADE,
+        related_name='subscriptions',
+        verbose_name="Курс"
+    )
+
+    class Meta:
+        unique_together = ('user', 'course')
+        verbose_name = "Подписка"
+        verbose_name_plural = "Подписки"
+
+    def __str__(self):
+        return f"{self.user.email} подписан на {self.course.title}"
