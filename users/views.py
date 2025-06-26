@@ -126,6 +126,10 @@ class CreatePaymentView(APIView):
 class PaymentStatusView(APIView):
     permission_classes = [IsAuthenticated]
 
+    @swagger_auto_schema(
+        operation_description="Получение статуса оплаты по session_id",
+        responses={200: openapi.Response("Статус оплаты")}
+    )
     def get(self, request, session_id):
         session = retrieve_stripe_session(session_id)
         return Response({
