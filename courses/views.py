@@ -18,6 +18,9 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from .permissions import IsModerator, IsOwner
 from .paginators import CourseLessonPagination
+from users.models import Payment
+from rest_framework.exceptions import PermissionDenied
+
 
 
 class CourseViewSet(viewsets.ModelViewSet):
@@ -46,14 +49,32 @@ class LessonCreateAPIView(CreateAPIView):
 
 
 class LessonListAPIView(ListAPIView):
-    queryset = Lesson.objects.all()
     serializer_class = LessonSerializer
     pagination_class = CourseLessonPagination
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        course_id = self.kwargs["course_id"]
+        if not Payment.objects.filter(user=self.request.user, paid_course_id=course_id).exists():
+            raise PermissionDenied("Оплата за курс не найдена")
+        return Lesson.objects.filter(course_id=course_id)
+
 
 
 class LessonRetrieveAPIView(RetrieveAPIView):
-    queryset = Lesson.objects.all()
     serializer_class = LessonSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Lesson.objects.all()
+
+    def get_object(self):
+        lesson = super().get_object()
+        course = lesson.course
+        if not Payment.objects.filter(user=self.request.user, paid_course=course).exists():
+            raise PermissionDenied("Оплата за курс не найдена")
+        return lesson
+
 
 
 class LessonUpdateAPIView(UpdateAPIView):
