@@ -3,7 +3,7 @@ from django.db import models
 
 
 class Course(models.Model):
-    name = models.CharField(
+    title = models.CharField(
         max_length=100, verbose_name="Курс", help_text="Укажите курс"
     )
     preview = models.ImageField(
@@ -81,7 +81,7 @@ class Lesson(models.Model):
         verbose_name_plural = "Уроки"
 
     def __str__(self):
-        return f"{self.name} ({self.course.name if self.course else 'без курса'})"
+        return f"{self.name} ({self.course.title if self.course else 'без курса'})"
 
 
 class Subscription(models.Model):

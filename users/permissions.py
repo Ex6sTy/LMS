@@ -1,4 +1,5 @@
 from rest_framework.permissions import BasePermission
+from users.models import Payment
 
 
 class IsModerator(BasePermission):
@@ -22,3 +23,7 @@ class IsOwnerOrModer(BasePermission):
             obj.user == request.user
             or request.user.groups.filter(name="Модератор").exists()
         )
+
+class HasPaidForCourse(BasePermission):
+    def has_object_permission(self, request, view, obj):
+        return Payment.objects.filter(user=request.user, paid_course=obj).exists()
