@@ -20,7 +20,9 @@ from .permissions import IsModerator, IsOwner
 from .paginators import CourseLessonPagination
 from users.models import Payment
 from rest_framework.exceptions import PermissionDenied
-
+from users.tasks import send_course_update_email
+from datetime import timedelta
+from django.utils import timezone
 
 
 class CourseViewSet(viewsets.ModelViewSet):
@@ -41,6 +43,17 @@ class CourseViewSet(viewsets.ModelViewSet):
         if self.action == "retrieve":
             return CourseDetailSerializer
         return super().get_serializer_class()
+
+    def perform_update(self, serializer):
+        course = self.get_object()
+        now = timezone.now()
+        if now - course.updated_at < timedelta(hours=4):
+            return
+
+        course = serializer.save()
+        subscribers = Subscription.objects.filter(course=course)
+        for sub in subscribers:
+            send_course_update_email.delay(sub.user.email, course.title)
 
 
 class LessonCreateAPIView(CreateAPIView):
