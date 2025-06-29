@@ -19,6 +19,7 @@ from users.services import (
 )
 from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND, HTTP_201_CREATED
 from users.services import retrieve_stripe_session
+from rest_framework import status
 
 
 
@@ -88,22 +89,24 @@ class CreatePaymentView(APIView):
             type=openapi.TYPE_OBJECT,
             required=["course_id"],
             properties={
-                "course_id": openapi.Schema(
-                    type=openapi.TYPE_INTEGER, description="ID курса"
-                ),
+                "course_id": openapi.Schema(type=openapi.TYPE_INTEGER, description="ID курса"),
             },
         ),
-        responses={200: openapi.Response(description="Ссылка на оплату")}
+        responses={201: openapi.Response(description="Ссылка на оплату")}
     )
     def post(self, request):
         course_id = request.data.get("course_id")
         if not course_id:
-            return Response({"error": "course_id is required"}, status=400)
+            return Response({"error": "course_id is required"}, status=HTTP_400_BAD_REQUEST)
 
         try:
             course = Course.objects.get(id=course_id)
         except Course.DoesNotExist:
-            return Response({"error": "Курс не найден"}, status=404)
+            return Response({"error": "Курс не найден"}, status=HTTP_404_NOT_FOUND)
+
+        # Проверка: уже есть платёж?
+        if Payment.objects.filter(user=request.user, paid_course=course).exists():
+            return Response({"error": "Этот курс уже оплачен или ожидает оплаты."}, status=HTTP_400_BAD_REQUEST)
 
         amount = course.price
 
@@ -117,23 +120,29 @@ class CreatePaymentView(APIView):
             user=request.user,
             paid_course=course,
             amount=amount,
-            method="transfer"
+            method="transfer",
+            stripe_session_id=session_id,
+            payment_url=checkout_url,
         )
 
-        return Response({"checkout_url": checkout_url, "session_id": session_id})
+        return Response({"checkout_url": checkout_url, "session_id": session_id}, status=HTTP_201_CREATED)
 
 
 class PaymentStatusView(APIView):
     permission_classes = [IsAuthenticated]
 
-    @swagger_auto_schema(
-        operation_description="Получение статуса оплаты по session_id",
-        responses={200: openapi.Response("Статус оплаты")}
-    )
-    def get(self, request, session_id):
-        session = retrieve_stripe_session(session_id)
+    def get(self, request):
+        session_id = request.query_params.get("session_id")
+        if not session_id:
+            return Response({"error": "session_id is required"}, status=400)
+
+        try:
+            session = retrieve_stripe_session(session_id)
+        except Exception as e:
+            return Response({"error": str(e)}, status=500)
+
         return Response({
-            "status": session["payment_status"],
-            "amount_total": session["amount_total"],
-            "currency": session["currency"],
-        })
+            "status": session.get("payment_status"),
+            "amount_total": session.get("amount_total"),
+            "currency": session.get("currency"),
+        }, status=status.HTTP_200_OK)

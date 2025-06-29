@@ -53,6 +53,9 @@ class CustomUser(AbstractUser):
 
 
 class Payment(models.Model):
+    stripe_session_id = models.CharField(max_length=255, blank=True, null=True)
+    payment_url = models.URLField(blank=True, null=True)
+
     class PaymentMethod(models.TextChoices):
         CASH = "cash", "Наличные"
         TRANSFER = "transfer", "Перевод на счёт"
