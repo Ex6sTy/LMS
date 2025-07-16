@@ -1,15 +1,11 @@
 import os
 from pathlib import Path
-
-from dotenv import load_dotenv
-
-load_dotenv()
+from datetime import timedelta
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = os.getenv("SECRET_KEY")
-
-DEBUG = True
+SECRET_KEY = os.environ["SECRET_KEY"]
+DEBUG = os.environ["DEBUG"].lower() in ["true", "1", "yes"]
 
 ALLOWED_HOSTS = []
 
@@ -67,11 +63,11 @@ WSGI_APPLICATION = "config.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql_psycopg2",
-        "NAME": os.getenv("DB_NAME"),
-        "USER": os.getenv("DB_USER"),
-        "PASSWORD": os.getenv("DB_PASSWORD"),
-        "HOST": os.getenv("DB_HOST"),
-        "PORT": os.getenv("DB_PORT"),
+        "NAME": os.environ["DB_NAME"],
+        "USER": os.environ["DB_USER"],
+        "PASSWORD": os.environ["DB_PASSWORD"],
+        "HOST": os.environ.get("DB_HOST", "localhost"),
+        "PORT": os.environ.get("DB_PORT", "5432"),
     }
 }
 
@@ -102,7 +98,7 @@ USE_TZ = True
 
 
 STATIC_URL = "static/"
-
+STATIC_ROOT = os.path.join(BASE_DIR, "static")
 MEDIA_URL = "media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
@@ -141,10 +137,11 @@ CORS_ALLOW_ALL_ORIGINS = False
 
 STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY")
 
-CELERY_BROKER_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
-CELERY_RESULT_BACKEND = os.getenv("REDIS_URL", "redis://localhost:6379/0")
+CELERY_BROKER_URL = os.environ["REDIS_URL"]
+CELERY_RESULT_BACKEND = os.environ["REDIS_URL"]
 CELERY_ACCEPT_CONTENT = ["json"]
 CELERY_TASK_SERIALIZER = "json"
 CELERY_TIMEZONE = "Europe/Moscow"
 CELERY_ENABLE_UTC = False
+
 
