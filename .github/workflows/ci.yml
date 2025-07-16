@@ -62,7 +62,7 @@ jobs:
         with:
           python-version: '3.13'
 
-      - name: Install dependencies with Poetry
+      - name: Install dependencies
         run: |
           pip install poetry
           poetry config virtualenvs.create false
