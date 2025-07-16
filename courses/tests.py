@@ -13,7 +13,7 @@ class CourseSubscriptionTestCase(APITestCase):
             password="1234"
         )
         self.course = Course.objects.create(
-            name="Test Course",
+            title="Test Course",
             description="Test Desc",
             owner=self.user,
             video_link="https://www.youtube.com/watch?v=dQw4w9WgXcQ"

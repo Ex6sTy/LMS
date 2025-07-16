@@ -1,0 +1,74 @@
+name: Django CI Pipeline
+
+on: [push, pull_request]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Create .env file
+        run: echo "${{ secrets.ENV_FILE }}" > .env
+
+      - name: Install flake8
+        run: |
+          pip install --upgrade pip
+          pip install flake8
+
+      - name: Run flake8
+        run: flake8 .
+
+  test:
+    runs-on: ubuntu-latest
+    needs: lint
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: 12345
+          POSTGRES_DB: LMS
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      SECRET_KEY: testsecret
+      DEBUG: "1"
+      DB_NAME: LMS
+      DB_USER: postgres
+      DB_PASSWORD: 12345
+      DB_HOST: localhost
+      DB_PORT: 5432
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.13'
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run migrations
+        run: python manage.py migrate
+
+      - name: Run tests
+        run: python manage.py test
