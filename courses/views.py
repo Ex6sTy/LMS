@@ -68,10 +68,11 @@ class LessonListAPIView(ListAPIView):
 
     def get_queryset(self):
         course_id = self.kwargs["course_id"]
-        if not Payment.objects.filter(user=self.request.user, paid_course_id=course_id).exists():
+        if not Payment.objects.filter(
+            user=self.request.user, paid_course_id=course_id
+        ).exists():
             raise PermissionDenied("Оплата за курс не найдена")
         return Lesson.objects.filter(course_id=course_id)
-
 
 
 class LessonRetrieveAPIView(RetrieveAPIView):
@@ -84,10 +85,11 @@ class LessonRetrieveAPIView(RetrieveAPIView):
     def get_object(self):
         lesson = super().get_object()
         course = lesson.course
-        if not Payment.objects.filter(user=self.request.user, paid_course=course).exists():
+        if not Payment.objects.filter(
+            user=self.request.user, paid_course=course
+        ).exists():
             raise PermissionDenied("Оплата за курс не найдена")
         return lesson
-
 
 
 class LessonUpdateAPIView(UpdateAPIView):
@@ -105,7 +107,7 @@ class SubscriptionToggleAPIView(APIView):
 
     def post(self, request, *args, **kwargs):
         user = request.user
-        course_id = request.data.get('course_id')
+        course_id = request.data.get("course_id")
         course = get_object_or_404(Course, id=course_id)
 
         subscription = Subscription.objects.filter(user=user, course=course)

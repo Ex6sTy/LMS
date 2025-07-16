@@ -1,6 +1,5 @@
 from django.conf import settings
 from django.db import models
-from django.utils import timezone
 
 
 class Course(models.Model):
@@ -83,7 +82,9 @@ class Lesson(models.Model):
         verbose_name_plural = "Уроки"
 
     def __str__(self):
-        return f"{self.name} ({self.course.title if self.course else 'без курса'})"
+        return f"{
+            self.name} ({
+            self.course.title if self.course else 'без курса'})"
 
 
 class Subscription(models.Model):
@@ -91,18 +92,18 @@ class Subscription(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name="subscriptions",
-        verbose_name="Пользователь"
+        verbose_name="Пользователь",
     )
     course = models.ForeignKey(
-        'Course',
+        "Course",
         on_delete=models.CASCADE,
         related_name="subscriptions",
-        verbose_name="Курс"
+        verbose_name="Курс",
     )
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ('user', 'course')
+        unique_together = ("user", "course")
         verbose_name = "Подписка"
         verbose_name_plural = "Подписки"
 

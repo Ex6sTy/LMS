@@ -16,4 +16,3 @@ class LessonAdmin(admin.ModelAdmin):
 @admin.register(Subscription)
 class SubscriptionAdmin(admin.ModelAdmin):
     list_display = ("user", "course", "created_at")
-

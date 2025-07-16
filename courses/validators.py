@@ -2,9 +2,7 @@ import re
 from rest_framework.exceptions import ValidationError
 
 
-YOUTUBE_REGEX = re.compile(
-    r"(https?://)?(www\.)?(youtube\.com|youtu\.be)/.+"
-)
+YOUTUBE_REGEX = re.compile(r"(https?://)?(www\.)?(youtube\.com|youtu\.be)/.+")
 
 
 def validate_youtube_link(value):

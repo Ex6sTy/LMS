@@ -14,12 +14,11 @@ from .permissions import IsOwnerOrModer, IsSelf
 from .serializers import PrivateUserSerializer, PublicUserSerializer
 from rest_framework.response import Response
 from users.services import (
-    create_stripe_product, create_stripe_price,
-    create_stripe_session
+    create_stripe_product,
+    create_stripe_price,
+    create_stripe_session,
 )
-from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND, HTTP_201_CREATED
 from users.services import retrieve_stripe_session
-
 
 
 class PaymentListAPIView(generics.ListAPIView):
@@ -79,6 +78,7 @@ class UserRetrieveUpdateView(generics.RetrieveUpdateAPIView):
             return [IsAuthenticated(), IsSelf()]
         return [IsAuthenticated()]
 
+
 class CreatePaymentView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -93,7 +93,7 @@ class CreatePaymentView(APIView):
                 ),
             },
         ),
-        responses={200: openapi.Response(description="Ссылка на оплату")}
+        responses={200: openapi.Response(description="Ссылка на оплату")},
     )
     def post(self, request):
         course_id = request.data.get("course_id")
@@ -114,10 +114,7 @@ class CreatePaymentView(APIView):
 
         # Создаём локальный платёж
         Payment.objects.create(
-            user=request.user,
-            paid_course=course,
-            amount=amount,
-            method="transfer"
+            user=request.user, paid_course=course, amount=amount, method="transfer"
         )
 
         return Response({"checkout_url": checkout_url, "session_id": session_id})
@@ -128,12 +125,14 @@ class PaymentStatusView(APIView):
 
     @swagger_auto_schema(
         operation_description="Получение статуса оплаты по session_id",
-        responses={200: openapi.Response("Статус оплаты")}
+        responses={200: openapi.Response("Статус оплаты")},
     )
     def get(self, request, session_id):
         session = retrieve_stripe_session(session_id)
-        return Response({
-            "status": session["payment_status"],
-            "amount_total": session["amount_total"],
-            "currency": session["currency"],
-        })
+        return Response(
+            {
+                "status": session["payment_status"],
+                "amount_total": session["amount_total"],
+                "currency": session["currency"],
+            }
+        )

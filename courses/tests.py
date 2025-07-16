@@ -5,18 +5,17 @@ from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
+
 class CourseSubscriptionTestCase(APITestCase):
     def setUp(self):
         self.user = User.objects.create_user(
-            username="testuser",
-            email="test@example.com",
-            password="1234"
+            username="testuser", email="test@example.com", password="1234"
         )
         self.course = Course.objects.create(
             title="Test Course",
             description="Test Desc",
             owner=self.user,
-            video_link="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+            video_link="https://www.youtube.com/watch?v=dQw4w9WgXcQ",
         )
         self.url = reverse("courses:course-list")
 
@@ -36,4 +35,3 @@ class CourseSubscriptionTestCase(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn("is_subscribed", response.data["results"][0])
         self.assertTrue(response.data["results"][0]["is_subscribed"])
-

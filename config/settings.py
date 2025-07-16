@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
-from datetime import timedelta
 from dotenv import load_dotenv
+
 load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -19,14 +19,12 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-
     "rest_framework",
     "django_filters",
     "rest_framework_simplejwt",
     "drf_yasg",
     "corsheaders",
     "django_celery_beat",
-
     "users",
     "courses",
 ]
@@ -118,7 +116,7 @@ REST_FRAMEWORK = {
         "rest_framework.permissions.IsAuthenticated",
     ],
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
-    "PAGE_SIZE": 15
+    "PAGE_SIZE": 15,
 }
 
 SWAGGER_SETTINGS = {
@@ -145,5 +143,3 @@ CELERY_ACCEPT_CONTENT = ["json"]
 CELERY_TASK_SERIALIZER = "json"
 CELERY_TIMEZONE = "Europe/Moscow"
 CELERY_ENABLE_UTC = False
-
-
