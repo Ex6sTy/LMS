@@ -82,9 +82,7 @@ class Lesson(models.Model):
         verbose_name_plural = "Уроки"
 
     def __str__(self):
-        return f"{
-            self.name} ({
-            self.course.title if self.course else 'без курса'})"
+        return f"{self.name} ({self.course.title if self.course else 'без курса'})"
 
 
 class Subscription(models.Model):
