@@ -50,6 +50,7 @@ jobs:
       SECRET_KEY: testsecret
       DEBUG: "1"
       DATABASE_URL: postgres://postgres:arty9926@localhost:5432/LMS
+      REDIS_URL: redis://localhost:6379/0
 
     steps:
       - name: Checkout code
