@@ -45,8 +45,10 @@ jobs:
           --health-retries 5
 
     env:
+      SECRET_KEY: django-insecure-p^%(r3fdogg=517*s065kb28d!)+jw5^_wyu2ql5osfeiedh9$
       REDIS_URL: redis://redis:6379/0
       DATABASE_URL: postgres://postgres:12345@localhost:5432/LMS
+
 
 
     steps:
