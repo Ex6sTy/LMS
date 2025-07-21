@@ -8,7 +8,7 @@ load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.environ["SECRET_KEY"]
-DEBUG = os.environ["DEBUG"].lower() in ["true", "1", "yes"]
+DEBUG = os.getenv("DEBUG", "False").lower() in ["true", "1", "yes"]
 
 ALLOWED_HOSTS = []
 
