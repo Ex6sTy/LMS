@@ -198,11 +198,23 @@ python manage.py dumpdata auth.group --indent 2 > users/fixtures/groups.json
 
 ---
 
-## 🛠 В планах
+## CI/CD
 
-- GitHub Actions CI/CD
-- Nginx + Gunicorn для продакшн-развертывания
-- Документация Swagger/Redoc
+В проекте используется GitHub Actions.
+
+### Запуск CI
+
+CI автоматически запускается при каждом push и pull request. В пайплайне:
+
+- Проверка кода через flake8
+- Прогон всех миграций
+- Юнит-тесты
+
+### Secrets
+
+Для корректной работы настроены следующие GitHub Secrets:
+
+- `ENV_FILE` — содержимое .env для CI
 
 ---
 
