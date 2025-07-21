@@ -180,15 +180,14 @@ LMS/
 ## 🌐 Переменные окружения (`.env.example`)
 
 ```env
-SECRET_KEY=your_secret_key
-DEBUG=True
-DB_NAME=your_db
-DB_USER=your_user
-DB_PASSWORD=your_password
-DB_HOST=db
-DB_PORT=5432
-STRIPE_SECRET_KEY=your_stripe_key
-REDIS_URL=redis://redis:6379/0
+SECRET_KEY=
+DEBUG=
+DJANGO_SETTINGS_MODULE=
+POSTGRES_DB=
+POSTGRES_USER=
+POSTGRES_PASSWORD=
+DATABASE_URL=
+REDIS_URL=
 ```
 
 ```bash
