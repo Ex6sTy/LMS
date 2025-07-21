@@ -49,12 +49,7 @@ jobs:
     env:
       SECRET_KEY: testsecret
       DEBUG: "1"
-      DB_NAME: LMS
-      DB_USER: postgres
-      DB_PASSWORD: arty9926
-      DB_HOST: 127.0.0.1
-      DB_PORT: 5432
-      REDIS_URL: redis://127.0.0.1:6379/0
+      DATABASE_URL: postgres://postgres:arty9926@localhost:5432/LMS
 
     steps:
       - name: Checkout code
