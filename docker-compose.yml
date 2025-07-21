@@ -1,4 +1,4 @@
-version: '3.13'
+version: '3.8'
 
 services:
   web:
@@ -7,8 +7,8 @@ services:
     command: python manage.py runserver 0.0.0.0:8000
     volumes:
       - .:/app
-      - lms_static_volume:/app/static
-      - lms_media_volume:/app/media
+      - static_volume:/app/static
+      - media_volume:/app/media
     ports:
       - "8000:8000"
     depends_on:
@@ -22,11 +22,11 @@ services:
     container_name: postgres
     restart: always
     volumes:
-      - lms_postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
     environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
 
   redis:
     image: redis:7
@@ -35,7 +35,6 @@ services:
 
   celery:
     build: .
-    container_name: celery
     command: celery -A config worker --loglevel=info
     volumes:
       - .:/app
@@ -47,7 +46,6 @@ services:
 
   celery-beat:
     build: .
-    container_name: celery_beat
     command: celery -A config beat --loglevel=info --scheduler django_celery_beat.schedulers:DatabaseScheduler
     volumes:
       - .:/app
@@ -57,7 +55,20 @@ services:
     env_file:
       - .env
 
+  nginx:
+    image: nginx:1.25
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx:/etc/nginx
+      - static_volume:/code/static
+      - media_volume:/code/media
+    depends_on:
+      - web
+
 volumes:
-  lms_postgres_data:
-  lms_static_volume:
-  lms_media_volume:
+  postgres_data:
+  static_volume:
+  media_volume:
+
+

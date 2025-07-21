@@ -63,9 +63,12 @@ WSGI_APPLICATION = "config.wsgi.application"
 
 DATABASES = {
     'default': dj_database_url.config(
-        default=os.getenv('DATABASE_URL')
+        default=os.getenv("DATABASE_URL", "postgres://postgres:postgres@localhost:5432/LMS"),
+        conn_max_age=600,
+        ssl_require=False
     )
 }
+
 
 
 AUTH_PASSWORD_VALIDATORS = [
