@@ -12,10 +12,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.10'
-
-      - name: Create .env file
-        run: echo "${{ secrets.ENV_FILE }}" > .env
+          python-version: '3.13'
 
       - name: Install flake8
         run: |
@@ -44,14 +41,20 @@ jobs:
           --health-timeout 5s
           --health-retries 5
 
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+
     env:
       SECRET_KEY: testsecret
       DEBUG: "1"
       DB_NAME: LMS
       DB_USER: postgres
-      DB_PASSWORD: 12345
-      DB_HOST: localhost
+      DB_PASSWORD: arty9926
+      DB_HOST: 127.0.0.1
       DB_PORT: 5432
+      REDIS_URL: redis://127.0.0.1:6379/0
 
     steps:
       - name: Checkout code
@@ -66,7 +69,6 @@ jobs:
         run: |
           pip install poetry
           poetry config virtualenvs.create false
-          poetry config package-mode false
           poetry install
 
       - name: Run migrations
@@ -74,3 +76,4 @@ jobs:
 
       - name: Run tests
         run: python manage.py test
+
