@@ -39,7 +39,7 @@ jobs:
           --health-cmd pg_isready
           --health-interval 10s
           --health-timeout 5s
-          --health-retries 5
+          --health-retries 10
 
       redis:
         image: redis:7
@@ -51,13 +51,10 @@ jobs:
       DB_NAME: LMS
       DB_USER: postgres
       DB_PASSWORD: arty9926
-      DB_HOST: postgres
+      DB_HOST: localhost
       DB_PORT: 5432
-      REDIS_URL: redis://127.0.0.1:6379/0
+      REDIS_URL: redis://localhost:6379/0
       SECRET_KEY: django-insecure-p^%(r3fdogg=517*s065kb28d!)+jw5^_wyu2ql5osfeiedh9$
-      DATABASE_URL: postgres://postgres:arty9926@postgres:5432/LMS
-
-
 
     steps:
       - name: Checkout code
@@ -74,6 +71,11 @@ jobs:
           poetry config virtualenvs.create false
           poetry install
 
+      - name: Wait for DB to be ready
+        run: |
+          echo "Waiting for PostgreSQL to be ready..."
+          sleep 10
+
       - name: Run migrations
         run: python manage.py migrate
 
@@ -81,8 +83,7 @@ jobs:
         run: python manage.py collectstatic --noinput
 
       - name: Run tests
-        run: |
-          python manage.py test --verbosity=2
+        run: python manage.py test --verbosity=2
 
   deploy:
     runs-on: ubuntu-latest
@@ -100,4 +101,3 @@ jobs:
             git pull origin develop
             docker-compose down
             docker-compose up -d --build
-
