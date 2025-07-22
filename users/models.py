@@ -2,8 +2,6 @@ from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
-from courses.models import Course, Lesson
-
 
 # class User(AbstractUser):
 #     username = None
@@ -65,7 +63,7 @@ class Payment(models.Model):
     )
 
     paid_course = models.ForeignKey(
-        Course,
+        'courses.Course',
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
@@ -74,7 +72,7 @@ class Payment(models.Model):
     )
 
     paid_lesson = models.ForeignKey(
-        Lesson,
+        'courses.Lesson',
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
