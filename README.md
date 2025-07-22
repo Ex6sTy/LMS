@@ -198,11 +198,65 @@ python manage.py dumpdata auth.group --indent 2 > users/fixtures/groups.json
 
 ---
 
-## 🛠 В планах
+## 🚀 Развёртывание на сервере (Yandex Cloud)
 
-- GitHub Actions CI/CD
-- Nginx + Gunicorn для продакшн-развертывания
-- Документация Swagger/Redoc
+### 📦 Требования
 
----
+- Ubuntu 22.04 / 24.04
+- Poetry установлен глобально
+- Python 3.13 установлен вручную
+- Публичный SSH-ключ добавлен при создании VM
+- Docker и Docker Compose установлены
 
+### 📁 Клонирование проекта
+
+```bash
+git clone https://github.com/Ex6sTy/LMS.git
+cd LMS
+```
+
+### 🐍 Настройка Python и Poetry
+
+```bash
+poetry env use /usr/local/bin/python3.13
+poetry install --no-root
+```
+
+### ⚙️ Переменные окружения
+Создайте .env на основе .env.example:
+
+```bash
+env:
+DEBUG=False
+SECRET_KEY=your-secret-key
+ALLOWED_HOSTS=your-domain.com,158.160.xxx.xxx
+
+DB_NAME=lms
+DB_USER=postgres
+DB_PASSWORD=postgres
+DB_HOST=db
+DB_PORT=5432
+
+REDIS_URL=redis://redis:6379/0
+STRIPE_SECRET_KEY=your-stripe-key
+```
+
+### 🐳 Запуск через Docker Compose
+
+```bash
+docker-compose up --build -d
+```
+
+### 🔄 Миграции и сбор статики
+
+```bash
+docker-compose exec web python manage.py migrate
+docker-compose exec web python manage.py collectstatic --noinput
+```
+
+### 👁 Проверка
+Перейдите в браузере по адресу:
+
+```bash
+http://<IP-сервера>:8000
+```
