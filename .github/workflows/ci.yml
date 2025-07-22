@@ -47,14 +47,7 @@ jobs:
           - 6379:6379
 
     env:
-      DEBUG: "1"
-      DB_NAME: LMS
-      DB_USER: postgres
-      DB_PASSWORD: arty9926
-      DB_HOST: postgres
-      DB_PORT: 5432
-      REDIS_URL: redis://localhost:6379/0
-      SECRET_KEY: django-insecure-p^%(r3fdogg=517*s065kb28d!)+jw5^_wyu2ql5osfeiedh9$
+      DATABASE_URL: postgres://postgres:arty9926@postgres:5432/LMS
 
     steps:
       - name: Checkout code
