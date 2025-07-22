@@ -47,6 +47,7 @@ jobs:
           - 6379:6379
 
     env:
+      SECRET_KEY: django-insecure-p^%(r3fdogg=517*s065kb28d!)+jw5^_wyu2ql5osfeiedh9$
       DATABASE_URL: postgres://postgres:arty9926@postgres:5432/LMS
 
     steps:
