@@ -1,6 +1,10 @@
-name: Django CI Pipeline
+name: Django CI/CD Pipeline
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - develop
+  pull_request:
 
 jobs:
   lint:
@@ -73,9 +77,7 @@ jobs:
           poetry install
 
       - name: Wait for DB to be ready
-        run: |
-          echo "Waiting for PostgreSQL to be ready..."
-          sleep 10
+        run: sleep 10
 
       - name: Run migrations
         run: python manage.py migrate
@@ -84,21 +86,42 @@ jobs:
         run: python manage.py collectstatic --noinput
 
       - name: Run tests
-        run: python manage.py test --verbosity=2
+        run: python manage.py test
 
-  deploy:
+  docker-build:
     runs-on: ubuntu-latest
     needs: test
-    if: github.ref == 'refs/heads/develop'
+
     steps:
-      - name: Deploy to production server
-        uses: appleboy/ssh-action@master
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Build Docker images
+        run: docker compose build
+
+  deploy:
+    name: Deploy to Remote Server
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.7.0
         with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USER }}
-          key: ${{ secrets.SSH_KEY }}
-          script: |
-            cd ~/app_folder
+          ssh-private-key: ${{ secrets.SERVER_SSH_KEY }}
+
+      - name: Add server to known_hosts
+        run: |
+          ssh-keyscan -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
+
+      - name: Deploy to Server
+        run: |
+          ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
+            cd ~/LMS
             git pull origin develop
-            docker-compose down
-            docker-compose up -d --build
+            docker compose down -v
+            docker compose up -d --build
+          EOF
