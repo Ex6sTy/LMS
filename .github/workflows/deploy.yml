@@ -115,9 +115,10 @@ jobs:
 
       - name: Deploy to Server
         run: |
-          ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
+          ssh "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}" << 'EOF'
             cd ~/LMS
             git pull origin develop
             docker compose down -v
             docker compose up -d --build
           EOF
+        
