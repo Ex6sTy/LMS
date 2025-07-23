@@ -6,6 +6,8 @@ from users.views import (
     RegisterView,
     UserProfileAPIView,
     UserRetrieveUpdateView,
+    CreatePaymentView,
+    PaymentStatusView,
 )
 
 from .views import UserViewSet
@@ -21,4 +23,10 @@ urlpatterns = [
     path("register/", RegisterView.as_view(), name="register"),
     path("", include(router.urls)),
     path("users/<int:pk>/", UserRetrieveUpdateView.as_view(), name="user-detail"),
+    path("payments/create/", CreatePaymentView.as_view(), name="create_payment"),
+    path(
+        "payments/status/<str:session_id>/",
+        PaymentStatusView.as_view(),
+        name="payment_status",
+    ),
 ]

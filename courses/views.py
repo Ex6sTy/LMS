@@ -18,6 +18,11 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from .permissions import IsModerator, IsOwner
 from .paginators import CourseLessonPagination
+from users.models import Payment
+from rest_framework.exceptions import PermissionDenied
+from users.tasks import send_course_update_email
+from datetime import timedelta
+from django.utils import timezone
 
 
 class CourseViewSet(viewsets.ModelViewSet):
@@ -39,6 +44,17 @@ class CourseViewSet(viewsets.ModelViewSet):
             return CourseDetailSerializer
         return super().get_serializer_class()
 
+    def perform_update(self, serializer):
+        course = self.get_object()
+        now = timezone.now()
+        if now - course.updated_at < timedelta(hours=4):
+            return
+
+        course = serializer.save()
+        subscribers = Subscription.objects.filter(course=course)
+        for sub in subscribers:
+            send_course_update_email.delay(sub.user.email, course.title)
+
 
 class LessonCreateAPIView(CreateAPIView):
     queryset = Lesson.objects.all()
@@ -46,14 +62,34 @@ class LessonCreateAPIView(CreateAPIView):
 
 
 class LessonListAPIView(ListAPIView):
-    queryset = Lesson.objects.all()
     serializer_class = LessonSerializer
     pagination_class = CourseLessonPagination
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        course_id = self.kwargs["course_id"]
+        if not Payment.objects.filter(
+            user=self.request.user, paid_course_id=course_id
+        ).exists():
+            raise PermissionDenied("Оплата за курс не найдена")
+        return Lesson.objects.filter(course_id=course_id)
 
 
 class LessonRetrieveAPIView(RetrieveAPIView):
-    queryset = Lesson.objects.all()
     serializer_class = LessonSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Lesson.objects.all()
+
+    def get_object(self):
+        lesson = super().get_object()
+        course = lesson.course
+        if not Payment.objects.filter(
+            user=self.request.user, paid_course=course
+        ).exists():
+            raise PermissionDenied("Оплата за курс не найдена")
+        return lesson
 
 
 class LessonUpdateAPIView(UpdateAPIView):
@@ -71,7 +107,7 @@ class SubscriptionToggleAPIView(APIView):
 
     def post(self, request, *args, **kwargs):
         user = request.user
-        course_id = request.data.get('course_id')
+        course_id = request.data.get("course_id")
         course = get_object_or_404(Course, id=course_id)
 
         subscription = Subscription.objects.filter(user=user, course=course)

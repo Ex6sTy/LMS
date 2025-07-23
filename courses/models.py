@@ -3,7 +3,7 @@ from django.db import models
 
 
 class Course(models.Model):
-    name = models.CharField(
+    title = models.CharField(
         max_length=100, verbose_name="Курс", help_text="Укажите курс"
     )
     preview = models.ImageField(
@@ -29,13 +29,14 @@ class Course(models.Model):
     )
 
     video_link = models.URLField(blank=True, null=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         verbose_name = "Курс"
         verbose_name_plural = "Курсы"
 
     def __str__(self):
-        return self.name
+        return self.title
 
 
 class Lesson(models.Model):
@@ -81,25 +82,26 @@ class Lesson(models.Model):
         verbose_name_plural = "Уроки"
 
     def __str__(self):
-        return f"{self.name} ({self.course.name if self.course else 'без курса'})"
+        return f"{self.name} ({self.course.title if self.course else 'без курса'})"
 
 
 class Subscription(models.Model):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        related_name='subscriptions',
-        verbose_name="Пользователь"
+        related_name="subscriptions",
+        verbose_name="Пользователь",
     )
     course = models.ForeignKey(
-        'Course',
+        "Course",
         on_delete=models.CASCADE,
-        related_name='subscriptions',
-        verbose_name="Курс"
+        related_name="subscriptions",
+        verbose_name="Курс",
     )
+    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ('user', 'course')
+        unique_together = ("user", "course")
         verbose_name = "Подписка"
         verbose_name_plural = "Подписки"
 

@@ -3,11 +3,15 @@ from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
 
 from users.models import CustomUser, Payment
+from courses.serializers import CourseSerializer, LessonSerializer
 
 User = get_user_model()
 
 
 class PaymentSerializer(serializers.ModelSerializer):
+    paid_course = CourseSerializer(read_only=True)
+    paid_lesson = LessonSerializer(read_only=True)
+
     class Meta:
         model = Payment
         fields = "__all__"
@@ -20,13 +24,13 @@ class UserSerializer(serializers.ModelSerializer):
     )
 
     class Meta:
-        model = User
+        model = CustomUser
         fields = (
             "id",
             "email",
+            "password",
             "phone",
-            "city",
-            "avatar",
+            "country",
             "payments",
         )
 
