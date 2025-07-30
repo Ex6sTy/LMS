@@ -118,6 +118,6 @@ jobs:
           ssh "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}" << 'EOF'
             cd ~/LMS
             git pull origin develop
-            docker compose down -v
-            docker compose up -d --build
+            docker-compose down -v
+            docker-compose up -d --build
           EOF
