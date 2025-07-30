@@ -231,10 +231,10 @@ DEBUG=False
 SECRET_KEY=your-secret-key
 ALLOWED_HOSTS=your-domain.com,158.160.xxx.xxx
 
-DB_NAME=lms
-DB_USER=postgres
-DB_PASSWORD=postgres
-DB_HOST=db
+DB_NAME=
+DB_USER=
+DB_PASSWORD=
+DB_HOST=
 DB_PORT=5432
 
 REDIS_URL=redis://redis:6379/0
@@ -260,3 +260,74 @@ docker-compose exec web python manage.py collectstatic --noinput
 ```bash
 http://<IP-сервера>:8000
 ```
+
+### 🚀 Настройка CI/CD и автоматического деплоя через GitHub Actions
+
+
+#### 1. Добавьте секреты GitHub Actions
+
+В настройках репозитория перейдите:  
+`Settings → Secrets and variables → Actions → New repository secret` и добавьте следующие переменные:
+
+| Название              | Пример                        | Описание                                  |
+|-----------------------|-------------------------------|-------------------------------------------|
+| SERVER_IP             | 158.160.xxx.xxx               | Внешний IP-адрес сервера (Yandex Cloud)   |
+| SERVER_USER           | artemii13                     | Имя пользователя на сервере               |
+| SERVER_SSH_KEY        | -----BEGIN OPEN...            | **Приватный** ключ SSH (`id_rsa`, не .pub)|
+| STRIPE_SECRET_KEY     | sk_test_...                   | Секретный ключ Stripe (если нужен)        |
+
+**Приватный ключ генерируется командой**:
+
+```bash
+ssh-keygen -t rsa -b 4096 -C "your_email@example.com"
+# Копируйте содержимое ~/.ssh/id_rsa в SECRET SERVER_SSH_KEY
+# Публичный ключ (~/.ssh/id_rsa.pub) добавьте на сервер в ~/.ssh/authorized_keys
+````
+
+#### 2. Workflow файл (`.github/workflows/deploy.yml`)
+
+```yaml
+name: CI/CD
+
+on:
+  push:
+    branches:
+      - develop
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install Poetry
+        run: pip install poetry
+      - name: Install dependencies
+        run: poetry install
+      - name: Run tests
+        run: poetry run pytest
+
+  deploy:
+    name: Deploy to Remote Server
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.7.0
+        with:
+          ssh-private-key: "${{ secrets.SERVER_SSH_KEY }}"
+      - name: Add server to known_hosts
+        run: ssh-keyscan -H "${{ secrets.SERVER_IP }}" >> ~/.ssh/known_hosts
+      - name: Deploy to Server
+        run: |
+          ssh "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}" << 'EOF'
+            cd ~/LMS
+            git pull origin develop
+            docker-compose down -v
+            docker-compose up -d --build
+            docker-compose exec web python manage.py migrate
+            docker-compose exec web python manage.py collectstatic --noinput
+          EOF
+```
+
